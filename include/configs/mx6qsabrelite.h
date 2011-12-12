@@ -78,7 +78,7 @@
 	"script=boot.scr\0" \
 	"uimage=uImage\0" \
 	"console=ttymxc3\0" \
-	"mmcdev=1\0" \
+	"mmcdev=0\0" \
 	"mmcpart=2\0" \
 	"mmcroot=/dev/mmcblk0p3 rootwait rw\0" \
 	"mmcargs=setenv bootargs console=${console},${baudrate} " \
@@ -101,9 +101,13 @@
 #define CONFIG_BOOTCOMMAND \
 	"mmc dev ${mmcdev};" \
 	"if mmc rescan ${mmcdev}; then " \
-		"if run loaduimage; then " \
-			"run mmcboot; " \
-		"else run netboot; " \
+		"if run loadbootscript; then " \
+			"run bootscript; " \
+		"else " \
+			"if run loaduimage; then " \
+				"run mmcboot; " \
+			"else run netboot; "\
+			"fi; " \
 		"fi; " \
 	"else run netboot; fi"
 
@@ -151,7 +155,7 @@
 #define CONFIG_ENV_OFFSET		(6 * 64 * 1024)
 #define CONFIG_ENV_SIZE			(8 * 1024)
 #define CONFIG_ENV_IS_IN_MMC
-#define CONFIG_SYS_MMC_ENV_DEV		1
+#define CONFIG_SYS_MMC_ENV_DEV		0
 
 #define CONFIG_OF_LIBFDT
 

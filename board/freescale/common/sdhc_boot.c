@@ -32,6 +32,7 @@
 #define ESDHC_BOOT_IMAGE_SIZE	0x48
 #define ESDHC_BOOT_IMAGE_ADDR	0x50
 
+#ifdef CONFIG_FSL_FIXED_MMC_LOCATION
 int mmc_get_env_addr(struct mmc *mmc, u32 *env_addr)
 {
 	u8 *tmp_buf;
@@ -61,3 +62,4 @@ int mmc_get_env_addr(struct mmc *mmc, u32 *env_addr)
 
 	return 0;
 }
+#endif

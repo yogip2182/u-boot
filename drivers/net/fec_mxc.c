@@ -226,7 +226,7 @@ static int miiphy_wait_aneg(struct eth_device *dev)
 	 */
 	start = get_timer(0);
 	do {
-		if (get_timer(start) > (CONFIG_SYS_HZ * 5)) {
+		if (get_timer(start) > (CONFIG_SYS_HZ * 10)) {
 			printf("%s: Autonegotiation timeout\n", dev->name);
 			return -1;
 		}

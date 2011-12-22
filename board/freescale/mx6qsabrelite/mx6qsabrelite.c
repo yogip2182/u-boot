@@ -121,18 +121,18 @@ static void setup_iomux_uart(void)
 
 static void setup_iomux_enet(void)
 {
-	gpio_direction_output(87, 0);  /* GPIO 3-23 */
-	gpio_direction_output(190, 1); /* GPIO 6-30 */
-	gpio_direction_output(185, 1); /* GPIO 6-25 */
-	gpio_direction_output(187, 1); /* GPIO 6-27 */
-	gpio_direction_output(188, 1); /* GPIO 6-28*/
-	gpio_direction_output(189, 1); /* GPIO 6-29 */
+	gpio_direction_output(IMX_GPIO_NR(3, 23), 0);
+	gpio_direction_output(IMX_GPIO_NR(6, 30), 1);
+	gpio_direction_output(IMX_GPIO_NR(6, 25), 1);
+	gpio_direction_output(IMX_GPIO_NR(6, 27), 1);
+	gpio_direction_output(IMX_GPIO_NR(6, 28), 1);
+	gpio_direction_output(IMX_GPIO_NR(6, 29), 1);
 	imx_iomux_v3_setup_multiple_pads(enet_pads1, ARRAY_SIZE(enet_pads1));
-	gpio_direction_output(184, 1); /* GPIO 6-24 */
+	gpio_direction_output(IMX_GPIO_NR(6, 24), 1);
 
 	/* Need delay 10ms according to KSZ9021 spec */
 	udelay(1000 * 10);
-	gpio_direction_output(87, 1);  /* GPIO 3-23 */
+	gpio_direction_output(IMX_GPIO_NR(3, 23), 1);
 
 	imx_iomux_v3_setup_multiple_pads(enet_pads2, ARRAY_SIZE(enet_pads2));
 }
@@ -148,11 +148,11 @@ int board_mmc_getcd(u8 *cd, struct mmc *mmc)
 	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
 
 	if (cfg->esdhc_base == USDHC3_BASE_ADDR) {
-		gpio_direction_input(192); /*GPIO7_0*/
-		*cd = gpio_get_value(192);
+		gpio_direction_input(IMX_GPIO_NR(7, 0));
+		*cd = gpio_get_value(IMX_GPIO_NR(7, 0));
 	} else {
-		gpio_direction_input(38); /*GPIO2_6*/
-		*cd = gpio_get_value(38);
+		gpio_direction_input(IMX_GPIO_NR(2, 6));
+		*cd = gpio_get_value(IMX_GPIO_NR(2, 6));
 	}
 
 	return 0;

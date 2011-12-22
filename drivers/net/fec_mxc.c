@@ -378,6 +378,7 @@ static int fec_set_hwaddr(struct eth_device *dev)
 static int fec_open(struct eth_device *edev)
 {
 	struct fec_priv *fec = (struct fec_priv *)edev->priv;
+	int speed;
 
 	debug("fec_open: fec_open(dev)\n");
 	/* full-duplex, heartbeat disabled */
@@ -427,8 +428,21 @@ static int fec_open(struct eth_device *edev)
 #endif
 
 	miiphy_wait_aneg(edev);
-	miiphy_speed(edev->name, fec->phy_id);
+	speed = miiphy_speed(edev->name, fec->phy_id);
 	miiphy_duplex(edev->name, fec->phy_id);
+#ifdef CONFIG_MX6Q
+	{
+		u32 ecr = readl(&fec->eth->ecntrl) & ~(0x1 << 5);
+		u32 rcr = (readl(&fec->eth->r_cntrl) & ~0x300) | 0x44;
+		if (speed == _1000BASET)
+			ecr |= (0x1 << 5);
+		else if (speed != _100BASET)
+			rcr |= (0x1 << 9);
+		writel(ecr, &fec->eth->ecntrl);
+		writel(rcr, &fec->eth->r_cntrl);
+	}
+#endif
+	printf("%s:Speed=%i\n", __func__, speed);
 
 	/*
 	 * Enable SmartDMA receive task

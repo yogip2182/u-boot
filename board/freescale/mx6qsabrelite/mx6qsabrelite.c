@@ -193,11 +193,15 @@ int board_mmc_init(bd_t *bis)
 
 int fecmxc_mii_postcall(int phy)
 {
-	/* prefer master mode */
-	miiphy_write("FEC", phy, MII_1000BASET_CTRL, 0x0f00);
+	/* force master mode */
+	miiphy_write("FEC", phy, MII_1000BASET_CTRL, 0x1f00);
 
 	/* min rx data delay */
 	miiphy_write("FEC", phy, MII_EXTENDED_CTRL, 0x8105);
+	miiphy_write("FEC", phy, MII_EXTENDED_DATAW, 0x0000);
+
+	/* min tx data delay */
+	miiphy_write("FEC", phy, MII_EXTENDED_CTRL, 0x8106);
 	miiphy_write("FEC", phy, MII_EXTENDED_DATAW, 0x0000);
 
 	/* max rx/tx clock delay, min rx/tx control delay */

@@ -44,6 +44,21 @@
 #define CONFIG_MXC_UART
 #define CONFIG_MXC_UART_BASE		UART2_BASE
 
+#define CONFIG_CMD_SF
+/*
+ * SPI Configs
+ */
+#ifdef CONFIG_CMD_SF
+	#define CONFIG_FSL_SF		1
+	#define CONFIG_SPI_FLASH       1
+	#define CONFIG_SPI_FLASH_SST	1
+	#define CONFIG_SPI_FLASH_CS	1
+	#define CONFIG_IMX_ECSPI
+	#define IMX_CSPI_VER_2_3        1
+
+	#define MAX_SPI_BYTES		(64 * 4)
+#endif
+
 /* MMC Configs */
 #define CONFIG_FSL_ESDHC
 #define CONFIG_FSL_USDHC

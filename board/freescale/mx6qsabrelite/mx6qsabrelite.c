@@ -31,6 +31,10 @@
 #include <fsl_esdhc.h>
 #include <miiphy.h>
 #include <netdev.h>
+#ifdef CONFIG_IMX_ECSPI
+#include <spi.h>
+#include <imx_spi.h>
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -187,6 +191,46 @@ int board_mmc_init(bd_t *bis)
 }
 #endif
 
+#ifdef CONFIG_IMX_ECSPI
+s32 spi_get_cfg(struct imx_spi_dev_t *dev)
+{
+	int rval = 0 ;
+	if (1 == dev->slave.cs) {
+		dev->base = ECSPI1_BASE_ADDR;
+		dev->ss = 1 ;
+		dev->ss_pol = IMX_SPI_ACTIVE_LOW; /* SPI NOR */
+		dev->freq = 25000000;
+		dev->fifo_sz = 64 * 4;
+		dev->us_delay = 0;
+	} else {
+		printf("%s: invalid chip select %d\n", __func__, dev->slave.cs);
+		rval = -EINVAL ;
+	}
+	return rval;
+}
+
+void spi_io_init(struct imx_spi_dev_t *dev, int active)
+{
+	if (dev->ss == 1)
+		gpio_set_value(IMX_GPIO_NR(3, 19), active ? 0 : 1);
+}
+
+iomux_v3_cfg_t mx6q_ecspi1_pads[] = {
+	/* SS1 */
+	MX6Q_PAD_EIM_D19__GPIO_3_19,
+	MX6Q_PAD_EIM_D17__ECSPI1_MISO,
+	MX6Q_PAD_EIM_D18__ECSPI1_MOSI,
+	MX6Q_PAD_EIM_D16__ECSPI1_SCLK,
+};
+
+void setup_spi(void)
+{
+	gpio_direction_output(IMX_GPIO_NR(3, 19), 1);
+	imx_iomux_v3_setup_multiple_pads(mx6q_ecspi1_pads,
+					 ARRAY_SIZE(mx6q_ecspi1_pads));
+}
+#endif
+
 #define MII_1000BASET_CTRL		0x9
 #define MII_EXTENDED_CTRL		0xb
 #define MII_EXTENDED_DATAW		0xc
@@ -251,7 +295,9 @@ int board_init(void)
 {
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
-
+#ifdef CONFIG_IMX_ECSPI
+	setup_spi();
+#endif
 	return 0;
 }
 

@@ -57,6 +57,11 @@ int dram_init(void)
 	return 0;
 }
 
+iomux_v3_cfg_t uart1_pads[] = {
+	MX6Q_PAD_SD3_DAT6__UART1_RXD,
+	MX6Q_PAD_SD3_DAT7__UART1_TXD,
+};
+
 iomux_v3_cfg_t uart2_pads[] = {
 	MX6Q_PAD_EIM_D26__UART2_TXD | MUX_PAD_CTRL(UART_PAD_CTRL),
 	MX6Q_PAD_EIM_D27__UART2_RXD | MUX_PAD_CTRL(UART_PAD_CTRL),
@@ -121,6 +126,7 @@ iomux_v3_cfg_t enet_pads2[] = {
 static void setup_iomux_uart(void)
 {
 	imx_iomux_v3_setup_multiple_pads(uart2_pads, ARRAY_SIZE(uart2_pads));
+	imx_iomux_v3_setup_multiple_pads(uart1_pads, ARRAY_SIZE(uart1_pads));
 }
 
 static void setup_iomux_enet(void)

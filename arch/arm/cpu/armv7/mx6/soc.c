@@ -63,11 +63,24 @@ void init_axi_cache_qos(void)
 	writel(0x007f007f, IOMUXC_BASE_ADDR + 0x01c);
 }
 
+void init_anatop_reg(void)
+{
+	u32 reg;
+
+	/* Increase the VDDSOC to 1.2V */
+	reg = readl(ANATOP_BASE_ADDR + 0x140);
+	reg &= ~0x007C0000;
+	reg |= (0x14 << 18) & 0x007C0000;
+	writel(reg, ANATOP_BASE_ADDR + 0x140);
+}
+
 int arch_cpu_init(void)
 {
 	init_aips();
 
 	init_axi_cache_qos();
+
+	init_anatop_reg();
 
 	return 0;
 }

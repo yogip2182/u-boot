@@ -54,9 +54,20 @@ void init_aips(void)
 	writel(0x77777777, reg + 0x04);
 }
 
+void init_axi_cache_qos(void)
+{
+	/* enable AXI cache for VDOA/VPU/IPU */
+	writel(0xf00000ff, IOMUXC_BASE_ADDR + 0x010);
+	/* set IPU AXI-id0 Qos=0xf(bypass) AXI-id1 Qos=0x7 */
+	writel(0x007f007f, IOMUXC_BASE_ADDR + 0x018);
+	writel(0x007f007f, IOMUXC_BASE_ADDR + 0x01c);
+}
+
 int arch_cpu_init(void)
 {
 	init_aips();
+
+	init_axi_cache_qos();
 
 	return 0;
 }

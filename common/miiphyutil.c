@@ -471,7 +471,23 @@ int miiphy_speed(const char *devname, unsigned char addr)
 			(btsr & (PHY_1000BTSR_1000FD | PHY_1000BTSR_1000HD)))
 		return _1000BASET;
 #endif /* CONFIG_PHY_GIGE */
-
+#ifdef CONFIG_PHY_MICREL_KSZ9021
+#define MII_PHY_CTL		0x1f
+#define MII_PHY_CTL_1000	(1 << 6)
+#define MII_PHY_CTL_100		(1 << 5)
+#define MII_PHY_CTL_10		(1 << 4)
+	u16 btsr;
+	if (miiphy_read(devname, addr, MII_PHY_CTL, &btsr)) {
+		printf("PHY 1000BT status");
+		goto miiphy_read_failed;
+	}
+	if (btsr & MII_PHY_CTL_1000)
+		return _1000BASET;
+	if (btsr & MII_PHY_CTL_100)
+		return _100BASET;
+	if (btsr & MII_PHY_CTL_10)
+		return _10BASET;
+#endif
 	/* Check Basic Management Control Register first. */
 	if (miiphy_read(devname, addr, MII_BMCR, &bmcr)) {
 		printf("PHY speed");

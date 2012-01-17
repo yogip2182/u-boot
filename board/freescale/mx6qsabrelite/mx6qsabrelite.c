@@ -31,6 +31,10 @@
 #include <fsl_esdhc.h>
 #include <miiphy.h>
 #include <netdev.h>
+#ifdef CONFIG_IMX_ECSPI
+#include <spi.h>
+#include <imx_spi.h>
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -52,6 +56,11 @@ int dram_init(void)
 
 	return 0;
 }
+
+iomux_v3_cfg_t uart1_pads[] = {
+	MX6Q_PAD_SD3_DAT6__UART1_RXD,
+	MX6Q_PAD_SD3_DAT7__UART1_TXD,
+};
 
 iomux_v3_cfg_t uart2_pads[] = {
 	MX6Q_PAD_EIM_D26__UART2_TXD | MUX_PAD_CTRL(UART_PAD_CTRL),
@@ -117,22 +126,23 @@ iomux_v3_cfg_t enet_pads2[] = {
 static void setup_iomux_uart(void)
 {
 	imx_iomux_v3_setup_multiple_pads(uart2_pads, ARRAY_SIZE(uart2_pads));
+	imx_iomux_v3_setup_multiple_pads(uart1_pads, ARRAY_SIZE(uart1_pads));
 }
 
 static void setup_iomux_enet(void)
 {
-	gpio_direction_output(87, 0);  /* GPIO 3-23 */
-	gpio_direction_output(190, 1); /* GPIO 6-30 */
-	gpio_direction_output(185, 1); /* GPIO 6-25 */
-	gpio_direction_output(187, 1); /* GPIO 6-27 */
-	gpio_direction_output(188, 1); /* GPIO 6-28*/
-	gpio_direction_output(189, 1); /* GPIO 6-29 */
+	gpio_direction_output(IMX_GPIO_NR(3, 23), 0);
+	gpio_direction_output(IMX_GPIO_NR(6, 30), 1);
+	gpio_direction_output(IMX_GPIO_NR(6, 25), 1);
+	gpio_direction_output(IMX_GPIO_NR(6, 27), 1);
+	gpio_direction_output(IMX_GPIO_NR(6, 28), 1);
+	gpio_direction_output(IMX_GPIO_NR(6, 29), 1);
 	imx_iomux_v3_setup_multiple_pads(enet_pads1, ARRAY_SIZE(enet_pads1));
-	gpio_direction_output(184, 1); /* GPIO 6-24 */
+	gpio_direction_output(IMX_GPIO_NR(6, 24), 1);
 
 	/* Need delay 10ms according to KSZ9021 spec */
 	udelay(1000 * 10);
-	gpio_direction_output(87, 1);  /* GPIO 3-23 */
+	gpio_direction_output(IMX_GPIO_NR(3, 23), 1);
 
 	imx_iomux_v3_setup_multiple_pads(enet_pads2, ARRAY_SIZE(enet_pads2));
 }
@@ -148,11 +158,11 @@ int board_mmc_getcd(u8 *cd, struct mmc *mmc)
 	struct fsl_esdhc_cfg *cfg = (struct fsl_esdhc_cfg *)mmc->priv;
 
 	if (cfg->esdhc_base == USDHC3_BASE_ADDR) {
-		gpio_direction_input(192); /*GPIO7_0*/
-		*cd = gpio_get_value(192);
+		gpio_direction_input(IMX_GPIO_NR(7, 0));
+		*cd = gpio_get_value(IMX_GPIO_NR(7, 0));
 	} else {
-		gpio_direction_input(38); /*GPIO2_6*/
-		*cd = gpio_get_value(38);
+		gpio_direction_input(IMX_GPIO_NR(2, 6));
+		*cd = gpio_get_value(IMX_GPIO_NR(2, 6));
 	}
 
 	return 0;
@@ -187,17 +197,61 @@ int board_mmc_init(bd_t *bis)
 }
 #endif
 
+#ifdef CONFIG_IMX_ECSPI
+s32 spi_get_cfg(struct imx_spi_dev_t *dev)
+{
+	int rval = 0 ;
+	if (1 == dev->slave.cs) {
+		dev->base = ECSPI1_BASE_ADDR;
+		dev->ss = 1 ;
+		dev->ss_pol = IMX_SPI_ACTIVE_LOW; /* SPI NOR */
+		dev->freq = 25000000;
+		dev->fifo_sz = 64 * 4;
+		dev->us_delay = 0;
+	} else {
+		printf("%s: invalid chip select %d\n", __func__, dev->slave.cs);
+		rval = -EINVAL ;
+	}
+	return rval;
+}
+
+void spi_io_init(struct imx_spi_dev_t *dev, int active)
+{
+	if (dev->ss == 1)
+		gpio_set_value(IMX_GPIO_NR(3, 19), active ? 0 : 1);
+}
+
+iomux_v3_cfg_t mx6q_ecspi1_pads[] = {
+	/* SS1 */
+	MX6Q_PAD_EIM_D19__GPIO_3_19,
+	MX6Q_PAD_EIM_D17__ECSPI1_MISO,
+	MX6Q_PAD_EIM_D18__ECSPI1_MOSI,
+	MX6Q_PAD_EIM_D16__ECSPI1_SCLK,
+};
+
+void setup_spi(void)
+{
+	gpio_direction_output(IMX_GPIO_NR(3, 19), 1);
+	imx_iomux_v3_setup_multiple_pads(mx6q_ecspi1_pads,
+					 ARRAY_SIZE(mx6q_ecspi1_pads));
+}
+#endif
+
 #define MII_1000BASET_CTRL		0x9
 #define MII_EXTENDED_CTRL		0xb
 #define MII_EXTENDED_DATAW		0xc
 
 int fecmxc_mii_postcall(int phy)
 {
-	/* prefer master mode */
-	miiphy_write("FEC", phy, MII_1000BASET_CTRL, 0x0f00);
+	/* force master mode */
+	miiphy_write("FEC", phy, MII_1000BASET_CTRL, 0x1f00);
 
 	/* min rx data delay */
 	miiphy_write("FEC", phy, MII_EXTENDED_CTRL, 0x8105);
+	miiphy_write("FEC", phy, MII_EXTENDED_DATAW, 0x0000);
+
+	/* min tx data delay */
+	miiphy_write("FEC", phy, MII_EXTENDED_CTRL, 0x8106);
 	miiphy_write("FEC", phy, MII_EXTENDED_DATAW, 0x0000);
 
 	/* max rx/tx clock delay, min rx/tx control delay */
@@ -247,7 +301,9 @@ int board_init(void)
 {
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
-
+#ifdef CONFIG_IMX_ECSPI
+	setup_spi();
+#endif
 	return 0;
 }
 

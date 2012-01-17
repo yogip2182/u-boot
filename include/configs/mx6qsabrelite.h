@@ -44,6 +44,21 @@
 #define CONFIG_MXC_UART
 #define CONFIG_MXC_UART_BASE		UART2_BASE
 
+#define CONFIG_CMD_SF
+/*
+ * SPI Configs
+ */
+#ifdef CONFIG_CMD_SF
+	#define CONFIG_FSL_SF		1
+	#define CONFIG_SPI_FLASH       1
+	#define CONFIG_SPI_FLASH_SST	1
+	#define CONFIG_SPI_FLASH_CS	1
+	#define CONFIG_IMX_ECSPI
+	#define IMX_CSPI_VER_2_3        1
+
+	#define MAX_SPI_BYTES		(64 * 4)
+#endif
+
 /* MMC Configs */
 #define CONFIG_FSL_ESDHC
 #define CONFIG_FSL_USDHC
@@ -66,6 +81,7 @@
 #define	CONFIG_FEC_XCV_TYPE		RGMII
 #define CONFIG_ETHPRIME			"FEC"
 #define CONFIG_FEC_MXC_PHYADDR		6
+#define CONFIG_PHY_MICREL_KSZ9021
 
 /* allow to overwrite serial and ethaddr */
 #define CONFIG_ENV_OVERWRITE
@@ -87,6 +103,8 @@
 	"script=boot.scr\0" \
 	"uimage=uImage\0" \
 	"console=ttymxc3\0" \
+	"fdt_high=0xffffffff\0" \
+	"initrd_high=0xffffffff\0" \
 	"mmcdev=0\0" \
 	"mmcpart=2\0" \
 	"mmcroot=/dev/mmcblk0p3 rootwait rw\0" \

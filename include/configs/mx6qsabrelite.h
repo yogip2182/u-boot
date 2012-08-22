@@ -106,6 +106,7 @@
 	"console=ttymxc3\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
+	"dtb_file=imx6q-sabrelite.dtb\0" \
 	"mmcdev=0\0" \
 	"mmcpart=1\0" \
 	"mmcroot=/dev/mmcblk0p3 rootwait rw\0" \

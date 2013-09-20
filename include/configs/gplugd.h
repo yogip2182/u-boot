@@ -57,6 +57,7 @@
 #undef CONFIG_CMD_FPGA
 #define CONFIG_CMD_USB
 #define CONFIG_CMD_EXT2
+#define CONFIG_CMD_EXT4
 #define CONFIG_CMD_FAT
 
 /* Disable DCACHE */
@@ -90,10 +91,12 @@
 #define CONFIG_ARMADA100_SPI
 #define CONFIG_ENV_SPI_CS		110
 #define CONFIG_SYS_SSP_PORT		2
+#define CONFIG_ENV_SPI_MAX_HZ		26000
 
 /* Flash Support */
 #define CONFIG_CMD_SF
 #define CONFIG_SPI_FLASH_ATMEL
+#define CONFIG_SF_DEFAULT_CS 110
 
 /*
  * mv-common.h should be defined after CMD configs since it used them
@@ -130,5 +133,14 @@
 #define CONFIG_DOS_PARTITION
 #define CONFIG_ISO_PARTITION
 #define CONFIG_SUPPORT_VFAT
+#define CONFIG_MTD_PARTITIONS
+
+/* MMC */
+#define CONFIG_CMD_MMC
+#define CONFIG_MMC
+#define CONFIG_GENERIC_MMC
+#define CONFIG_PXASDH
+#define CONFIG_SYS_MMC_BASE     0xd4280000
+#define CONFIG_SYS_MMC1_BASE    0xd4281000
 
 #endif	/* __CONFIG_GPLUGD_H */

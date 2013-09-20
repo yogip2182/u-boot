@@ -63,6 +63,23 @@ int board_early_init_f(void)
 		MFP110_SSP2_CS,
 		MFP111_SSP2_CLK,
 
+		/* MMC1 */
+		MFP040_MMC1_D1,
+		MFP041_MMC1_D0,
+		MFP043_MMC1_CLK,
+		MFP049_MMC1_CMD,
+		MFP051_MMC1_D3,
+		MFP052_MMC1_D2,
+		MFP053_MMC1_CD,
+
+		/* MMC2 */
+		MFP028_MMC2_CMD,
+		MFP029_MMC2_CLK,
+		MFP030_MMC2_D0,
+		MFP031_MMC2_D1,
+		MFP032_MMC2_D2,
+		MFP033_MMC2_D3,
+
 		MFP_EOC		/*End of configuration*/
 	};
 	/* configure MFP's */
@@ -89,6 +106,13 @@ int board_init(void)
 	writel(SSP2_APBCLK | SSP2_FNCLK, &apb2_regs->ssp2_clkrst);
 	return 0;
 }
+#ifdef CONFIG_PXASDH
+int pxa_sdh_init(bd_t *);
+int board_mmc_init(bd_t *bd)
+{
+	 return pxa_sdh_init(bd);
+}
+#endif
 
 #ifdef CONFIG_ARMADA100_FEC
 int board_eth_init(bd_t *bis)

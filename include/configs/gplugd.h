@@ -149,4 +149,12 @@
 #define CONFIG_SYS_MMC_BASE     0xd4280000
 #define CONFIG_SYS_MMC1_BASE    0xd4281000
 
+/* BOOTZ */
+#define CONFIG_CMD_BOOTZ
+
+/* Default load address */
+#define CONFIG_SYS_DEF_LOAD_ADDR      0x00500000
+
+#define CONFIG_MISC_INIT_R
+
 #endif	/* __CONFIG_GPLUGD_H */

@@ -87,6 +87,73 @@ int board_early_init_f(void)
 	return 0;
 }
 
+int misc_init_r(void)
+{
+	char *env;
+
+	/* primary network interface */
+        env = getenv("ethprime");
+        if (!env)
+		setenv("ethprime", "eth0");
+
+        /* linux boot arguments */
+        env = getenv("default_load_addr");
+        if (!env)
+                setenv("default_load_addr", "0x00500000");
+
+	env = getenv("baudrate");
+	if (!env)
+		setenv("baudrate", 115200);
+
+	env = getenv("ethaddr");
+	if (!env)
+		setenv("ethaddr", "00:00:5A:9F:6D:82");
+
+	env = getenv("mmc_bootargs");
+	if (!env)
+		setenv("mmc_bootargs", "root=/dev/mmcblk0p2 "\
+		       "console=ttyS2,115200 uart_dma rootwait");
+
+	env = getenv("mmc_bootcmd");
+	if (!env)
+		setenv("mmc_bootcmd", "setenv bootargs $(mmc_bootargs);"\
+			"mmc sw_dev 1; mmc rescan;"\
+		       "fatls mmc 1:1; fatload mmc 1:1 0x0500000 zImage;"\
+		       "bootz 0x0500000;");
+
+	env = getenv("usb_bootargs");
+	if (!env)
+		setenv("usb_bootargs", "root=/dev/sda1 console=ttyS2,115200 "\
+		       "uart_dma rootwait");
+
+	env = getenv("usb_bootcmd");
+	if (!env)
+		setenv("usb_bootcmd", "setenv bootargs $(usb_bootargs);"\
+		       "usb start;"\
+		       "ext2load usb 0 0x0500000 boot/uImage;"\
+		       "bootm 0x0500000;");
+
+	env = getenv("bootcmd");
+	if (!env)
+		setenv("bootcmd", "run usb_bootcmd");
+
+	env = getenv("ipaddr");
+	if (!env)
+		setenv("ipaddr", "192.168.7.200");
+
+	env = getenv("serverip");
+	if (!env)
+		setenv("serverip", "192.168.7.103");
+
+	env = getenv("ddr-test-disable");
+	if (!env)
+		setenv("ddr-test-disable", "sf erase 0x07BC00 0x100;"\
+		       "mw.b 0x500000 0xff 4;"\
+		       "mw.b 0x500000 0 4;"\
+		       "sf write 0x500000 0x07BC00 4;");
+
+}
+
 int board_init(void)
 {
 	struct armd1apb2_registers *apb2_regs =

@@ -89,14 +89,14 @@
 
 /* SPI Support */
 #define CONFIG_ARMADA100_SPI
-#define CONFIG_ENV_SPI_CS		110
 #define CONFIG_SYS_SSP_PORT		2
-#define CONFIG_ENV_SPI_MAX_HZ		26000
 
 /* Flash Support */
 #define CONFIG_CMD_SF
 #define CONFIG_SPI_FLASH_ATMEL
-#define CONFIG_SF_DEFAULT_CS 110
+#define CONFIG_SF_DEFAULT_CS	110
+#define CONFIG_SF_DEFAULT_SPEED 26000
+#define CONFIG_PROBE_FLASH_INIT
 
 /*
  * mv-common.h should be defined after CMD configs since it used them
@@ -118,6 +118,12 @@
 #define CONFIG_ENV_SECT_SIZE		0x4000
 #define CONFIG_ENV_SIZE			0x4000
 #define CONFIG_ENV_OFFSET		0x07C000
+#define CONFIG_ENV_OVERWRITE
+#define CONFIG_ENV_SPI_BUS              0
+#define CONFIG_ENV_SPI_CS               110
+#define CONFIG_ENV_SPI_MAX_HZ           26000
+#define CONFIG_ENV_SPI_MODE             0
+
 
 #define CONFIG_CMD_ASKENV
 #define CONFIG_CMD_EDITENV

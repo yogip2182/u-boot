@@ -148,6 +148,15 @@
 #define CONFIG_PXASDH
 #define CONFIG_SYS_MMC_BASE     0xd4280000
 #define CONFIG_SYS_MMC1_BASE    0xd4281000
+/* This change is required because for higher block counts
+ * following warnings is seen, where 0x01ef is block counts of
+ * previous read command
+ * 
+ * pxa_sdh_start_cmd:WARN: CMD/DATA pins are not all high, PRE_STAT=0x01ef
+ *
+ * Forcing max blocks to some minimal value
+ */
+#define CONFIG_SYS_MMC_MAX_BLK_COUNT 8
 
 /* BOOTZ */
 #define CONFIG_CMD_BOOTZ

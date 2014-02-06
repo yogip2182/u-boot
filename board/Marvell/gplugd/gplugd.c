@@ -27,6 +27,61 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+static struct spi_flash *flash;
+#define SPI_FLASH_PAGE_SIZE         256
+
+/* Serial number format: VVF-YYWW-NNNN
+ *  * MAC Address format: 12:34:56:78:9a:bc */
+#define GPLUGD_SERIAL_NUM_LENGTH        14
+#define GPLUGD_MAC_ADDR_LENGTH          18
+
+struct otp {
+	char serial_num[GPLUGD_SERIAL_NUM_LENGTH];
+	char mac_addr[GPLUGD_MAC_ADDR_LENGTH];
+} gplugD_otp;
+
+int do_read_otp()
+{
+	int ret;
+	u8 cmd[4] = {0x77, 0, 0, 0};
+
+	if (NULL == flash) {
+		flash = spi_flash_probe(CONFIG_ENV_SPI_BUS, CONFIG_ENV_SPI_CS,
+					CONFIG_ENV_SPI_MAX_HZ,
+					CONFIG_ENV_SPI_MODE);
+                if (!flash) {
+			puts("Failed to probe flash\n");
+			return -1;
+		}
+	}
+
+	ret = spi_flash_read_common(flash, cmd, sizeof(cmd), &gplugD_otp,
+				    sizeof(struct otp));
+	if (ret) {
+		puts("Failed to ready OTP\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+int do_display_mfg(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+{
+	if (do_read_otp()) {
+		puts("Failed to read Manufacturing data\n");
+
+		return -1;
+	} else {
+		printf("Serial Number = %s\n", gplugD_otp.serial_num);
+		printf("MAC address = %s\n", gplugD_otp.mac_addr);
+	}
+
+	return 0;
+}
+
+U_BOOT_CMD(mfg_data, 4, 1, do_display_mfg,
+	   "mfg_data - Display Manufacturing data\n", NULL);
+
 int board_early_init_f(void)
 {
 	u32 mfp_cfg[] = {
@@ -106,8 +161,12 @@ int misc_init_r(void)
 		setenv("baudrate", 115200);
 
 	env = getenv("ethaddr");
-	if (!env)
-		setenv("ethaddr", "00:00:5A:9F:6D:82");
+	if (!env) {
+		if (do_read_otp())
+			setenv("ethaddr", "00:00:5A:9F:6D:82");
+		else
+			setenv("ethaddr", gplugD_otp.mac_addr);
+	}
 
 	env = getenv("mmc_bootargs");
 	if (!env)
